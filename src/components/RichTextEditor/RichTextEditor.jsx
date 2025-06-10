@@ -8,7 +8,7 @@ import MentionEditor from './components/MentionEditor'
 import TableContextMenu from './components/TableContextMenu'
 import { Toolbar } from './components/Toolbar'
 import { Element, Leaf } from './components/ElementRenderer'
-import { getInitialValue, isValidSlateValue, normalizeSlateValue } from './utils/initialValue'
+import { getInitialValue, isValidSlateValue, normalizeSlateValue, saveContent } from './utils/initialValue'
 import { HOTKEYS } from './constants/constants'
 import { isHotkey } from './utils/utils'
 import { toggleMark } from './utils/editorActions'
@@ -33,6 +33,16 @@ const RichTextEditor = () => {
   const [selectedText, setSelectedText] = useState('')
   const [isToolbarFixed, setIsToolbarFixed] = useState(false)
   const [contextMenu, setContextMenu] = useState({ isOpen: false, position: { x: 0, y: 0 } })
+  const [isSaved, setIsSaved] = useState(true) // 标记是否已保存
+  const [lastSavedContent, setLastSavedContent] = useState(() => {
+    // 初始化时记录当前内容为最后保存的内容
+    try {
+      const initialValue = getInitialValue()
+      return JSON.stringify(normalizeSlateValue(initialValue))
+         } catch {
+       return JSON.stringify([{ type: 'paragraph', children: [{ text: 'Hello World!' }] }])
+     }
+  })
   const editorRef = useRef(null)
   const renderElement = useCallback(props => <Element {...props} />, [])
   const renderLeaf = useCallback(props => <Leaf {...props} />, [])
@@ -58,7 +68,26 @@ const RichTextEditor = () => {
     }, 50)
   }, [editor])
 
+  // 保存功能
+  const handleSave = useCallback(() => {
+    const success = saveContent(value)
+    if (success) {
+      setIsSaved(true)
+      setLastSavedContent(JSON.stringify(value)) // 更新最后保存的内容
+      alert('💾 内容已保存到本地存储！')
+    } else {
+      alert('❌ 保存失败，请重试！')
+    }
+  }, [value])
+
   const handleKeyDown = useCallback((event) => {
+    // 处理 Ctrl+S 或 Cmd+S 保存快捷键
+    if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+      event.preventDefault()
+      handleSave()
+      return
+    }
+
     // 处理表格内的回车键
     if (event.key === 'Enter') {
       if (handleTableCellEnter(editor, event)) {
@@ -83,64 +112,8 @@ const RichTextEditor = () => {
       }
     }
     
-    // 处理在内联元素中的输入
-    const { selection } = editor
-    if (selection && Range.isCollapsed(selection)) {
-      const [node, path] = Editor.node(editor, selection)
-      
-      // 检查是否在内联元素中
-      if (node && (node.type === 'link' || node.type === 'mention')) {
-        // 处理普通字符输入
-        if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
-          event.preventDefault()
-          
-          // 找到当前内联元素在父级中的位置
-          const parentPath = Path.parent(path)
-          const nodeIndex = path[path.length - 1]
-          
-          // 在内联元素后插入文本
-          const textInsertPath = [...parentPath, nodeIndex + 1]
-          
-          Editor.withoutNormalizing(editor, () => {
-            // 检查是否已经有文本节点
-            try {
-              const [nextNode] = Editor.node(editor, textInsertPath)
-              if (Text.isText(nextNode)) {
-                // 如果有文本节点，在其开头插入
-                Transforms.insertText(editor, event.key, { at: { path: textInsertPath, offset: 0 } })
-                Transforms.select(editor, { path: textInsertPath, offset: 1 })
-              } else {
-                throw new Error('Not a text node')
-              }
-            } catch {
-              // 如果没有文本节点，创建一个
-              Transforms.insertNodes(editor, { text: event.key }, { at: textInsertPath })
-              Transforms.select(editor, { path: textInsertPath, offset: 1 })
-            }
-          })
-          
-          return
-        }
-        
-        // 处理方向键
-        if (event.key === 'ArrowRight') {
-          event.preventDefault()
-          const parentPath = Path.parent(path)
-          const nodeIndex = path[path.length - 1]
-          const nextTextPath = [...parentPath, nodeIndex + 1]
-          
-          try {
-            Transforms.select(editor, { path: nextTextPath, offset: 0 })
-          } catch {
-            // 如果没有下一个文本节点，创建一个
-            Transforms.insertNodes(editor, { text: '' }, { at: nextTextPath })
-            Transforms.select(editor, { path: nextTextPath, offset: 0 })
-          }
-          return
-        }
-      }
-    }
-  }, [editor])
+    // 让 Slate.js 处理其他所有输入（包括数字、汉字等）
+  }, [editor, handleSave])
 
   const handleOpenLinkEditor = () => {
     const { selection } = editor
@@ -246,6 +219,7 @@ const RichTextEditor = () => {
     const handleScroll = () => {
       if (editorRef.current) {
         const rect = editorRef.current.getBoundingClientRect()
+        // 当编辑器顶部到达或超过视口顶部时，固定工具栏
         const shouldFixToolbar = rect.top <= 0
         setIsToolbarFixed(shouldFixToolbar)
       }
@@ -265,12 +239,29 @@ const RichTextEditor = () => {
     try {
       // 验证新值是否有效
       const normalizedValue = normalizeSlateValue(newValue)
+      
+      // 比较新值和当前值的 JSON 字符串
+      const currentContent = JSON.stringify(value)
+      const newContent = JSON.stringify(normalizedValue)
+      
       setValue(normalizedValue)
+      
+      // 只有当内容真正发生变化时才更新保存状态
+      if (currentContent !== newContent) {
+        // 检查新内容是否与最后保存的内容相同
+        if (newContent === lastSavedContent) {
+          // 如果与最后保存的内容相同，标记为已保存
+          setIsSaved(true)
+        } else {
+          // 如果与最后保存的内容不同，标记为未保存
+          setIsSaved(false)
+        }
+      }
     } catch (error) {
       console.error('❌ 更新编辑器值失败:', error)
       // 如果出现错误，保持当前值不变
     }
-  }, [])
+  }, [value, lastSavedContent])
 
   // 额外的安全检查
   if (!editor || !value || !isValidSlateValue(value)) {
@@ -289,10 +280,17 @@ const RichTextEditor = () => {
         <Toolbar 
           onOpenLinkEditor={handleOpenLinkEditor}
           onOpenMentionEditor={handleOpenMentionEditor}
+          onSave={handleSave}
           isFixed={isToolbarFixed}
         />
         <DragDropUploader>
           <div className="editor-container">
+            {!isSaved && (
+              <div className="unsaved-prompt">
+                <p>您有未保存的更改</p>
+                <button onClick={handleSave}>保存</button>
+              </div>
+            )}
             <Editable
               renderElement={renderElement}
               renderLeaf={renderLeaf}

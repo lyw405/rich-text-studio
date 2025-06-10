@@ -43,6 +43,7 @@
   max-width: 900px;
   border-radius: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  top: 0; /* 紧贴视口顶部 */
 }
 
 /* 当工具栏固定时，为编辑器内容添加顶部边距 */
@@ -365,8 +366,6 @@
     opacity: 1;
   }
 }
-
-
 
 .link-editor-header {
   display: flex;
@@ -899,4 +898,43 @@
   .editor-table-cell:hover {
     background: #404040;
   }
+}
+
+/* 未保存状态提示框 */
+.unsaved-prompt {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #856404;
+}
+
+.unsaved-prompt p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.unsaved-prompt button {
+  background: #ffc107;
+  color: #212529;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.unsaved-prompt button:hover {
+  background: #e0a800;
+}
+
+.unsaved-prompt button:active {
+  transform: scale(0.95);
 } 

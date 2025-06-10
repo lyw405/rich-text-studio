@@ -3,7 +3,8 @@ import { useSlate } from 'slate-react'
 import { 
   Bold, Italic, Underline, Code, Strikethrough, 
   List, ListOrdered, Quote, Heading1, Heading2, Heading3,
-  Link, Image, Video, Music, Table, AtSign, Undo, Redo, Code2
+  Link, Image, Video, Music, Table, AtSign, Undo, Redo, Code2,
+  Save
 } from 'lucide-react'
 import FileUploader from './FileUploader'
 import ExportButton from './ExportButton'
@@ -11,11 +12,25 @@ import { isMarkActive, isBlockActive } from '../utils/utils'
 import { toggleMark, toggleBlock, insertImageFile, insertVideoFile, insertAudioFile, insertTable, insertCodeBlock } from '../utils/editorActions'
 
 // 工具栏组件
-export const Toolbar = ({ onOpenLinkEditor, onOpenMentionEditor, isFixed }) => {
+export const Toolbar = ({ onOpenLinkEditor, onOpenMentionEditor, onSave, isFixed }) => {
   const editor = useSlate()
   
   return (
     <div className={`toolbar ${isFixed ? 'fixed' : ''}`}>
+      <div className="toolbar-group">
+        <ToolbarButton
+          onMouseDown={event => {
+            event.preventDefault()
+            onSave()
+          }}
+          title="保存内容 (Ctrl+S / Cmd+S)"
+        >
+          <Save size={16} />
+        </ToolbarButton>
+      </div>
+
+      <div className="toolbar-divider" />
+
       <div className="toolbar-group">
         <ToolbarButton
           active={isMarkActive(editor, 'bold')}

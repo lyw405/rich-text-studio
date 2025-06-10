@@ -23,7 +23,7 @@ const CodeBlock = ({ attributes, children, element }) => {
   }, [children, language])
 
   return (
-    <div {...attributes} className="code-block-container">
+    <div className="code-block-container">
       <div className="code-block-header">
         <span className="code-block-language">{language}</span>
         <button 
@@ -36,7 +36,7 @@ const CodeBlock = ({ attributes, children, element }) => {
           复制
         </button>
       </div>
-      <pre className="editor-code-block">
+      <pre {...attributes} className="editor-code-block">
         <code
           ref={codeRef}
           className={`language-${language}`}

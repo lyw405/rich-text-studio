@@ -1,5 +1,47 @@
+// localStorage 存储键名
+const STORAGE_KEY = 'richtext-studio-content'
+
+// 从 localStorage 读取保存的内容
+export const getSavedContent = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      const parsedContent = JSON.parse(saved)
+      if (isValidSlateValue(parsedContent)) {
+        return parsedContent
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ 读取保存的内容时出错:', error)
+  }
+  return null
+}
+
+// 保存内容到 localStorage
+export const saveContent = (content) => {
+  try {
+    if (isValidSlateValue(content)) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(content))
+      return true
+    } else {
+      console.error('❌ 无法保存无效的内容')
+      return false
+    }
+  } catch (error) {
+    console.error('❌ 保存内容时出错:', error)
+    return false
+  }
+}
+
 // 初始值 - 确保始终返回有效的 Slate 值
 export const getInitialValue = () => {
+  // 首先尝试从 localStorage 获取保存的内容
+  const savedContent = getSavedContent()
+  if (savedContent) {
+    return savedContent
+  }
+
+  // 如果没有保存的内容，返回默认值
   const defaultValue = [
     {
       type: 'heading-one',
