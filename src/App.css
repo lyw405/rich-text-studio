@@ -1,0 +1,90 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.App {
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px 0;
+  box-sizing: border-box;
+}
+
+.App-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 2rem;
+  padding: 2rem 20px 0;
+}
+
+.App-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.App-header p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.App-main {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  padding: 0 20px;
+}
+
+.App-footer {
+  text-align: center;
+  color: white;
+  opacity: 0.8;
+  font-size: 0.9rem;
+  padding: 0 20px;
+}
+
+.App-footer p {
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .App {
+    padding: 10px 0;
+  }
+  
+  .App-header,
+  .App-main,
+  .App-footer {
+    padding: 0 10px;
+  }
+  
+  .App-header h1 {
+    font-size: 2rem;
+  }
+  
+  .App-header p {
+    font-size: 1rem;
+  }
+}
+
+
