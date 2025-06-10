@@ -47,6 +47,17 @@ const RichTextEditor = () => {
     }
   }, [])
 
+  // 辅助函数：重新聚焦编辑器
+  const focusEditor = useCallback(() => {
+    setTimeout(() => {
+      try {
+        ReactEditor.focus(editor)
+      } catch (error) {
+        console.warn('无法聚焦编辑器:', error)
+      }
+    }, 50)
+  }, [editor])
+
   const handleKeyDown = useCallback((event) => {
     // 处理表格内的回车键
     if (event.key === 'Enter') {
@@ -198,13 +209,7 @@ const RichTextEditor = () => {
       }
       
       // 重新聚焦编辑器
-      setTimeout(() => {
-        try {
-          ReactEditor.focus(editor)
-        } catch (error) {
-          console.warn('无法聚焦编辑器:', error)
-        }
-      }, 50)
+      focusEditor()
       
     } catch (error) {
       console.error('❌ 链接插入失败:', error)
@@ -229,13 +234,7 @@ const RichTextEditor = () => {
       Transforms.move(editor, { distance: 1, unit: 'offset' })
       
       // 重新聚焦编辑器
-      setTimeout(() => {
-        try {
-          ReactEditor.focus(editor)
-        } catch (error) {
-          console.warn('无法聚焦编辑器:', error)
-        }
-      }, 50)
+      focusEditor()
       
     } catch (error) {
       console.error('❌ 用户提及插入失败:', error)

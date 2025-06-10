@@ -1,5 +1,4 @@
 import { Editor, Range, Element as SlateElement } from 'slate'
-import { LIST_TYPES, TEXT_ALIGN_TYPES } from '../constants/constants'
 
 // 快捷键检测
 export const isHotkey = (hotkey, event) => {
